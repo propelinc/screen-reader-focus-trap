@@ -1,5 +1,21 @@
+interface Options {
+  containerDomNode: HTMLElement
+  sourceDomNode: HTMLElement
+  initialFocusDomNode?: HTMLElement
+}
+
 export class FocusTrap {
-  constructor({ containerDomNode, sourceDomNode, initialFocusDomNode } = {}) {
+  containerDomNode: HTMLElement | null
+  sourceDomNode: HTMLElement | null
+  initialFocusDomNode: HTMLElement | null
+  hiddenDomNodes: Element[] = []
+  inertDomNodes: HTMLElement[] = []
+
+  constructor({
+    containerDomNode,
+    sourceDomNode,
+    initialFocusDomNode,
+  }: Options) {
     if (!containerDomNode) {
       throw new Error('No containerDomNode provided.')
     }
@@ -10,9 +26,9 @@ export class FocusTrap {
 
     this.containerDomNode = this.getDomNode(containerDomNode)
     this.sourceDomNode = this.getDomNode(sourceDomNode)
-    this.initialFocusDomNode =
-      this.getDomNode(initialFocusDomNode) || this.containerDomNode
-    this.hiddenDomNodes = []
+    this.initialFocusDomNode = initialFocusDomNode
+      ? this.getDomNode(initialFocusDomNode)
+      : this.containerDomNode
   }
 
   activate() {
@@ -33,7 +49,7 @@ export class FocusTrap {
     this.sourceDomNode && this.sourceDomNode.focus()
   }
 
-  gatherOutsideDomNodes(currentElement) {
+  gatherOutsideDomNodes(currentElement: HTMLElement | null) {
     // 1. Start at the current element (begins with the container element).
     // 2. Hide all sibling elements that are not already aria-hidden.
     // 3. Go up one level to the parent element.
@@ -45,35 +61,31 @@ export class FocusTrap {
 
     if (currentElement !== document.querySelector('body')) {
       const parentElement = currentElement.parentElement
-      const siblingElements = [...parentElement.children]
-      siblingElements.forEach(element => {
-        if (
-          element !== currentElement &&
-          !element.getAttribute('aria-hidden')
-        ) {
-          this.hiddenDomNodes.push(element)
-        }
-      })
-
-      this.gatherOutsideDomNodes(parentElement)
+      if (parentElement !== null) {
+        const siblingElements = [...parentElement.children]
+        siblingElements.forEach((element: Element) => {
+          if (element !== currentElement && !element.getAttribute('inert')) {
+            this.hiddenDomNodes.push(element)
+          }
+        })
+        this.gatherOutsideDomNodes(parentElement)
+      }
     }
   }
 
   hideOutsideDomNodes() {
     this.gatherOutsideDomNodes(this.containerDomNode)
     this.hiddenDomNodes.forEach(element =>
-      element.setAttribute('aria-hidden', true)
+      element.setAttribute('inert', 'true')
     )
   }
 
   showOutsideDomNodes() {
-    this.hiddenDomNodes.forEach(element =>
-      element.removeAttribute('aria-hidden')
-    )
+    this.hiddenDomNodes.forEach(element => element.removeAttribute('inert'))
     this.hiddenDomNodes = []
   }
 
-  getDomNode(element) {
+  getDomNode(element: HTMLElement) {
     return typeof element === 'string'
       ? document.querySelector(element)
       : element

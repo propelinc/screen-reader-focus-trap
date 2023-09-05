@@ -1,1 +1,1 @@
-export { FocusTrap } from './focus-trap'
+export { FocusTrap } from './focus-trap.ts'
