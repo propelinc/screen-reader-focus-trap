@@ -1,9 +1,3 @@
-interface Options {
-  containerDomNode: HTMLElement
-  sourceDomNode: HTMLElement
-  initialFocusDomNode?: HTMLElement
-}
-
 export class FocusTrap {
   containerDomNode: HTMLElement | null
   sourceDomNode: HTMLElement | null
@@ -15,7 +9,11 @@ export class FocusTrap {
     containerDomNode,
     sourceDomNode,
     initialFocusDomNode,
-  }: Options) {
+  }: {
+    containerDomNode: HTMLElement
+    sourceDomNode: HTMLElement
+    initialFocusDomNode?: HTMLElement
+  }) {
     if (!containerDomNode) {
       throw new Error('No containerDomNode provided.')
     }
