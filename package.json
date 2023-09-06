@@ -5,6 +5,7 @@
   "main": "dist/main.cjs.min.js",
   "module": "dist/main.esm.min.js",
   "browser": "dist/main.umd.min.js",
+  "types": "types/index.d.ts",
   "files": [
     "dist"
   ],
